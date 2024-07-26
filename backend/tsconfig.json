@@ -12,6 +12,9 @@
     "baseUrl": "./",
     "incremental": true,
     "skipLibCheck": true,
+    "paths": {
+      "@db/*": ["src/database/*"],
+    },
     "strictNullChecks": false,
     "noImplicitAny": false,
     "strictBindCallApply": false,
