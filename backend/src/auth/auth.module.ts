@@ -3,7 +3,7 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { AuthService } from './auth.service';
 import { AuthController } from './auth.controller';
 import { User, UserSchema } from '@db/user.schema';
-import { Token, TokenSchema } from '@db/token.schema';
+import { JwtModule } from '@nestjs/jwt';
 
 @Module({
   imports: [
@@ -11,12 +11,14 @@ import { Token, TokenSchema } from '@db/token.schema';
       {
         name: User.name,
         schema: UserSchema
-      },
-      {
-        name: Token.name,
-        schema: TokenSchema
       }
-    ])
+    ]),
+    JwtModule.register({
+      secret: "example secret",
+      signOptions: {
+        expiresIn: 60*60*24*30
+      }
+    })
   ],
   providers: [AuthService],
   controllers: [AuthController]

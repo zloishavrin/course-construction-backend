@@ -1,6 +1,9 @@
-import { Body, Controller, Post } from '@nestjs/common';
+import { Body, Controller, Post, UsePipes, ValidationPipe } from '@nestjs/common';
 import { AuthService } from './auth.service';
+import { RegistrationDto } from './auth.dto';
+import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 
+@ApiTags('Аутентификация')
 @Controller('auth')
 export class AuthController {
 
@@ -9,11 +12,18 @@ export class AuthController {
     ) {}
 
     @Post('registration')
-    registration(
-        @Body('email') email: string, 
-        @Body('password') password: string
-    ) {
-        return this.AuthService.registration(email, password);
+    @ApiOperation({ summary: "Регистрация пользователя" })
+    @ApiResponse({
+        status: 200,
+        description: 'Успешная регистрация пользователя',
+        type: RegistrationDto
+    })
+    @UsePipes(new ValidationPipe())
+    async registration(
+        @Body() RegistrationDto: RegistrationDto
+    ): Promise<{ token: string }> {
+        const token = await this.AuthService.registration(RegistrationDto.email, RegistrationDto.password);
+        return token;
     }
 
 }

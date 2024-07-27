@@ -1,20 +1,25 @@
-import { Token } from '@db/token.schema';
 import { User } from '@db/user.schema';
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import bcrypt from "bcrypt";
-import uuid from 'uuid';
+import * as bcrypt from "bcryptjs";
+import * as uuid from 'uuid';
+import { JwtService } from '@nestjs/jwt';
 
 @Injectable()
 export class AuthService {
 
     constructor(
         @InjectModel(User.name) private UserModel: Model<User>,
-        @InjectModel(Token.name) private TokenModel: Model<Token>
+        private JwtService: JwtService
     ) {}
 
-    async registration(email: string, password: string) {
+    async registration(email: string, password: string): Promise<{ token: string }> {
+        const candidate = await this.UserModel.findOne({ email });
+        if(candidate) {
+            throw new BadRequestException(['Пользователь с таким Email уже существует']);
+        };
+
         const hashedPassword = await bcrypt.hash(password, 3);
         const activationLink = uuid.v4();
 
@@ -22,9 +27,17 @@ export class AuthService {
             email,
             password: hashedPassword,
             activationLink
-        })
+        });
 
-        return user;
+        const payload = {
+            email: user.email,
+            sub: user._id
+        };
+
+        const token = this.JwtService.sign(payload);
+        return {
+            token
+        };
     }
 
 }
