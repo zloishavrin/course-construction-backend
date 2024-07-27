@@ -5,6 +5,7 @@ import { Model } from 'mongoose';
 import * as bcrypt from "bcryptjs";
 import * as uuid from 'uuid';
 import { JwtService } from '@nestjs/jwt';
+import { RegistrationResponseDto } from './auth.dto';
 
 @Injectable()
 export class AuthService {
@@ -14,7 +15,7 @@ export class AuthService {
         private JwtService: JwtService
     ) {}
 
-    async registration(email: string, password: string): Promise<{ token: string }> {
+    async registration(email: string, password: string): Promise<RegistrationResponseDto> {
         const candidate = await this.UserModel.findOne({ email });
         if(candidate) {
             throw new BadRequestException(['Пользователь с таким Email уже существует']);
