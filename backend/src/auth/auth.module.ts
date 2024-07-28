@@ -4,6 +4,8 @@ import { AuthService } from './auth.service';
 import { AuthController } from './auth.controller';
 import { User, UserSchema } from '@db/user.schema';
 import { JwtModule } from '@nestjs/jwt';
+import { MailerModule } from 'src/mailer/mailer.module';
+import { AuthGuard } from './auth.guard';
 
 @Module({
   imports: [
@@ -14,13 +16,15 @@ import { JwtModule } from '@nestjs/jwt';
       }
     ]),
     JwtModule.register({
-      secret: "example secret",
+      secret: process.env.JWT_SECRET,
       signOptions: {
         expiresIn: 60*60*24*30
       }
-    })
+    }),
+    MailerModule
   ],
-  providers: [AuthService],
-  controllers: [AuthController]
+  providers: [AuthService, AuthGuard],
+  controllers: [AuthController],
+  exports: [AuthGuard]
 })
 export class AuthModule {}

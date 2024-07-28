@@ -1,7 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsEmail, MinLength, IsNotEmpty } from 'class-validator';
 
-export class RegistrationRequestDto {
+export class LoginRequestDto {
     @ApiProperty({
         example: "user@google.com",
         description: 'Электронная почта пользователя'
@@ -19,7 +19,7 @@ export class RegistrationRequestDto {
     password: string;
 }
 
-export class RegistrationResponseDto {
+export class LoginResponseDto {
     @ApiProperty({
         example: "token",
         description: "JWT-Токен"

@@ -12,6 +12,13 @@ async function bootstrap() {
       .setTitle('Course Construction')
       .setDescription('Описание API конструктора курсов')
       .setVersion('1.0')
+      .addBearerAuth({
+        type: 'http',
+        description: 'Аутентификация по Bearer-токену',
+        name: 'authorization',
+        in: 'header',
+        bearerFormat: 'JWT',
+      })
       .build();
     const document = SwaggerModule.createDocument(app, config);
     SwaggerModule.setup('api', app, document);

@@ -5,7 +5,6 @@ import { Model } from 'mongoose';
 import * as bcrypt from "bcryptjs";
 import * as uuid from 'uuid';
 import { JwtService } from '@nestjs/jwt';
-import { RegistrationResponseDto } from './auth.dto';
 
 @Injectable()
 export class AuthService {
@@ -15,7 +14,10 @@ export class AuthService {
         private JwtService: JwtService
     ) {}
 
-    async registration(email: string, password: string): Promise<RegistrationResponseDto> {
+    async registration(email: string, password: string): Promise<{
+        token: string,
+        activationLink: string
+    }> {
         const candidate = await this.UserModel.findOne({ email });
         if(candidate) {
             throw new BadRequestException(['Пользователь с таким Email уже существует']);
@@ -37,8 +39,42 @@ export class AuthService {
 
         const token = this.JwtService.sign(payload);
         return {
-            token
+            token,
+            activationLink
         };
+    }
+
+    async activateAccount(activationLink: string) {
+        const user = await this.UserModel.findOne({ activationLink });
+        if(!user) {
+            throw new BadRequestException(['Неверная ссылка активации']);
+        }
+        user.isActivated = true;
+        await user.save();
+    }
+
+    async login(email: string, password: string): Promise<string> {
+        const user = await this.UserModel.findOne({ email });
+        if(!user) {
+            throw new BadRequestException(['Пользователь с таким Email не найден']);
+        }
+
+        const isPasswordEqual = await bcrypt.compare(password, user.password);
+        if(!isPasswordEqual) {
+            throw new BadRequestException(['Неверный пароль']);
+        }
+
+        if(!user.isActivated) {
+            throw new BadRequestException(['Аккаунт не активирован']);
+        }
+
+        const payload = {
+            email: user.email,
+            sub: user._id
+        }
+        const token = this.JwtService.sign(payload);
+        
+        return token;
     }
 
 }
